@@ -1,0 +1,26 @@
+---
+- hosts: elastic-log-cluster
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Instalar firewalld
+      apt:
+        name: firewalld
+        state: present
+
+    - name: Agregar el puerto 9200/tcp al firewall permanentemente
+      command: firewall-cmd --add-port=9200/tcp --permanent
+      become: yes
+
+    - name: Agregar el puerto 9200/udp al firewall permanentemente
+      command: firewall-cmd --add-port=9200/udp --permanent
+      become: yes
+
+    - name: Agregar el puerto 9300/tcp al firewall permanentemente
+      command: firewall-cmd --add-port=9300/tcp --permanent
+      become: yes
+
+    - name: Recargar las configuraciones del firewall
+      command: firewall-cmd --reload
+      become: yes

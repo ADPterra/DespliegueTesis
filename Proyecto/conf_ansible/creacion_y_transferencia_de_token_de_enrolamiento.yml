@@ -1,0 +1,63 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Crear carpeta para el token de enrolamiento
+      file:
+        path: /etc/elasticsearch/token_para_conexion_de_nodos
+        state: directory
+
+    - name: Ejecutar el comando para obtener el token de enrolamiento
+      command: "/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node"
+      args:
+        chdir: "/usr/share/elasticsearch/bin/"
+      register: enrollment_token_output
+
+    - name: Debug - 1
+      debug:
+        var: enrollment_token_output.stdout
+
+    - name: Guardar el token en un archivo
+      copy:
+        content: "{{ enrollment_token_output.stdout }}"
+        dest: /etc/elasticsearch/token_para_conexion_de_nodos/token.txt
+
+    - name: Debug - Verificacion de token
+      command: cat /etc/elasticsearch/token_para_conexion_de_nodos/token.txt
+
+    - name: Copia de token de enrolamiento al controlador ansible fetch
+      fetch:
+        src: /etc/elasticsearch/token_para_conexion_de_nodos/token.txt
+        dest: /home/Proyecto/conf_ansible/token_nodo_elasticsearch/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Recargar Systemd daemon
+      command: systemctl daemon-reload
+
+    - name: Habilitar Elasticsearch service
+      command: systemctl enable elasticsearch.service
+
+    - name: Iniciar Elasticsearch service
+      command: systemctl start elasticsearch.service
+
+- hosts: sec-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Crear carpeta para el token de enrolamiento en sec-elastic-log
+      file:
+        path: /etc/elasticsearch/token_para_conexion_de_nodos
+        state: directory
+
+    - name: Transferencia de token de enrolamiento desde Controlador ansible a nodo secundario synchronize
+      synchronize:
+        src: /home/Proyecto/conf_ansible/token_nodo_elasticsearch/token.txt
+        dest: /etc/elasticsearch/token_para_conexion_de_nodos/
+
+    - name: Debug - Envio de token
+      command: cat /etc/elasticsearch/token_para_conexion_de_nodos/token.txt
+

@@ -1,0 +1,94 @@
+---
+#- name: Instalar rsync en el controlador de Ansible
+#  hosts: localhost
+#  become: true
+#  tasks:
+#    - name: Actualizar los paquetes a la ultima version
+#      apt:
+#        update_cache: yes
+#
+#    - name: Verificar si existe el directorio .cloudshell 
+#      file:
+#        path: ~/.cloudshell
+#        state: directory
+#
+#    - name: Crear archivo de supresion para habilitar el uso de apt
+#      file:
+#        path: ~/.cloudshell/no-apt-get-warning
+#        state: touch
+#
+#    - name: Obtener la ultima version de rsync en google cloud
+#      apt:
+#        name: rsync
+#        state: latest
+#        update_cache: yes
+#        force_apt_get: yes
+#        environment:
+#          DEBIAN_FRONTEND: noninteractive
+#
+#  handlers:
+#    - name: Verificar estado del servicio rsync
+#      command: systemctl status rsync
+
+- name: Actualizar e instalar rsync, luego actualizar y reiniciar el servicio rsync
+  hosts: elastic-log-cluster:kibana-cluster
+  become: true
+  tasks:
+    - name: Actualizar lista de paquetes
+      apt:
+        update_cache: yes
+
+    - name: Instalar la ultima version de todos los paquetes
+      apt:
+        upgrade: yes
+
+    - name: Instalar rsync
+      apt:
+        name: rsync
+        state: present
+
+    - name: Reemplazar el archivo de configuracion
+      block:
+        - name: verificar existencia de directorio
+          file:
+            path: /lib/systemd/system
+            state: directory
+
+        - name: reemplazo de archivo de configuracion
+          copy:
+            content: |
+              [Unit] 
+              # END ANSIBLE MANAGED BLOCK Description=fast remote file copy program daemon
+              Documentation=man:rsync(1) man:rsyncd.conf(5)
+              #ConditionPathExists=/etc/rsyncd.conf
+              After=network.target
+
+              [Service]
+              ExecStart=/usr/bin/rsync --daemon --no-detach --config=/dev/null
+
+              [Install]
+              WantedBy=multi-user.target
+            dest: /lib/systemd/system/rsync.service
+          notify:
+            - Verificar estado del servicio rsync
+
+      check_mode: no
+
+    - name: daemon-reload
+      command: systemctl daemon-reload
+
+    - name: Reinicio de servicio rsync
+      command: systemctl restart rsync
+
+    - name: Verificacion que rsync se encuentra activo
+      command: systemctl is-active rsync
+      register: rsync_service_status
+      ignore_errors: true
+
+    - name: Debug estado de servicio
+      debug:
+        var: rsync_service_status.stdout
+
+  handlers:
+    - name: Verificar estado del servicio rsync
+      command: systemctl status rsync

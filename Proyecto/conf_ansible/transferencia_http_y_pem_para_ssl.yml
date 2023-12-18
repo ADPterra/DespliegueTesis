@@ -1,0 +1,123 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Copiar elastic-certificates.p12 a /etc/elasticsearch/certs/
+      shell:
+        cmd: "mv /etc/elasticsearch/elasticsearch/prim-elastic-log/http.p12 /etc/elasticsearch/certs/http.p12 && chmod 660 /etc/elasticsearch/certs/http.p12 && chown root:elasticsearch /etc/elasticsearch/certs/http.p12"
+
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Copia de certificado http.p12 para sec-elastic-log hacia el controlador ansible
+      fetch:
+        src: /etc/elasticsearch/elasticsearch/sec-elastic-log/http.p12
+        dest: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-elastic-log/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Copia de certificado http.p12 para prim-kibana
+      fetch:
+        src: /etc/elasticsearch/elasticsearch/prim-kibana/http.p12
+        dest: /home/Proyecto/conf_ansible/certificado_https_para_clientes/prim-kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Copia de certificado http.p12 para sec-kibana hacia el controlador ansible
+      fetch:
+        src: /etc/elasticsearch/elasticsearch/sec-kibana/http.p12
+        dest: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Copia de certificado elasticsearch-ca.pem para prim-kibana
+      fetch:
+        src: /etc/elasticsearch/kibana/elasticsearch-ca.pem
+        dest: /home/Proyecto/conf_ansible/certificado_https_para_clientes/prim-kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Copia de certificado elasticsearch-ca.pem para sec-kibana
+      fetch:
+        src: /etc/elasticsearch/kibana/elasticsearch-ca.pem
+        dest: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+- hosts: sec-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado desde controlador ansible hacia sec-elastic-log
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-elastic-log/http.p12
+        dest: /etc/elasticsearch/
+
+    - name: Reemplazar certificado
+      become: yes
+      shell:
+        cmd: "mv /etc/elasticsearch/http.p12 /etc/elasticsearch/certs/http.p12"
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "chown root:elasticsearch /etc/elasticsearch/certs/http.p12 && chmod 660 /etc/elasticsearch/certs/http.p12"
+
+- hosts: prim-kibana
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado http.p12 desde controlador ansible hacia prim-kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_https_para_clientes/prim-kibana/http.p12
+        dest: /etc/kibana/certs/
+
+    - name: Transferencia de certificado elasticsearch-ca.pem desde controlador ansible hacia prim-kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_https_para_clientes/prim-kibana/elasticsearch-ca.pem
+        dest: /etc/kibana/certs/
+
+    - name: Asignacion de permisos a certificado elasticsearch-ca.pem
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/elasticsearch-ca.pem && chmod 660 /etc/kibana/certs/elasticsearch-ca.pem"
+
+    - name: Asignacion de permisos a certificado http.p12
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/http.p12 && chmod 660 /etc/kibana/certs/http.p12"
+
+- hosts: sec-kibana
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado desde controlador ansible hacia sec-kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-kibana/http.p12
+        dest: /etc/kibana/certs/
+
+    - name: Transferencia de certificado desde controlador ansible hacia sec-kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_https_para_clientes/sec-kibana/elasticsearch-ca.pem
+        dest: /etc/kibana/certs/
+
+    - name: Asignacion de permisos a certificado elasticsearch-ca.pem
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/elasticsearch-ca.pem && chmod 660 /etc/kibana/certs/elasticsearch-ca.pem"
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/http.p12 && chmod 660 /etc/kibana/certs/http.p12"

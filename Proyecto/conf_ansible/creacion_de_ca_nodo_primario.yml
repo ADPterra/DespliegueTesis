@@ -1,0 +1,21 @@
+---
+- name: Creacion de certificados TLS en nodo primario
+  hosts: prim-elastic-log
+  become: true
+  tasks:
+    - name: Generar CA
+      expect:
+        command: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca"
+        responses:
+          'Please enter the desired output file \[elastic-stack-ca.p12\]:': "\n"
+          'Enter password for elastic-stack-ca.p12 :': "adp_terraform2023\n"
+        chdir: "/usr/share/elasticsearch/bin/"
+
+    - name: Creacion de certificado para nodos elasticsearch
+      expect:
+        command: "/usr/share/elasticsearch/bin/elasticsearch-certutil cert --ca /usr/share/elasticsearch/elastic-stack-ca.p12"
+        responses:
+          'Enter password for CA \(/usr/share/elasticsearch/elastic-stack-ca.p12\) :': "adp_terraform2023\n"
+          'Please enter the desired output file \[elastic-certificates.p12\]:': "\n"
+          'Enter password for elastic-certificates.p12 :': "elastic_adp_terraform2023\n"
+        chdir: "/usr/share/elasticsearch/bin/"

@@ -1,0 +1,50 @@
+- hosts: kibana-cluster
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Actualizar e instalar paquete  apt-transport-https 
+      apt:
+        name: apt-transport-https
+        update_cache: yes
+
+    - name: Incluir llave GPG de elasticsearch
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+        keyring: /usr/share/keyrings/elasticsearch-keyring.gpg
+
+    - name: incluir repositorio elasticsearch
+      become: true
+      become_method: sudo
+      shell: echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+
+    - name: Instalacion de paquetes requeridos por kibana
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - gpg-agent
+        - curl
+        - procps
+        - net-tools
+        - gnupg
+
+    - name: Instalacion de ultima version de kibana
+      apt:
+        update_cache: yes
+        name: kibana
+        state: present
+
+    - name: Reiniciar kibana
+      service:
+        name: kibana
+        state: restarted
+
+
+
+
+    - name: Creacion de directorio certs
+      file:
+        path: /etc/kibana/certs
+        state: directory

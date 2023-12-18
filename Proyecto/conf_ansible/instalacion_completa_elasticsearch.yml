@@ -1,0 +1,43 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Actualizar e instalar paquete transport-https
+      apt:
+        name: apt-transport-https
+        update_cache: yes
+
+    - name: Incluir llave GPG de elasticsearch
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+        keyring: /usr/share/keyrings/elasticsearch-keyring.gpg
+
+    - name: Incluir repositorio elasticsearch
+      become: true
+      become_method: sudo
+      shell: echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+
+    - name: Instalar paquetes necesarios para la instalacion de elasticsearch
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - gpg-agent
+        - curl
+        - procps
+        - net-tools
+        - gnupg
+        - unzip
+
+    - name: Instalacion de ultima version de elasticsearch
+      apt:
+        update_cache: yes
+        name: elasticsearch
+        state: present
+
+    - name: Restart Elasticsearch
+      service:
+        name: elasticsearch
+        state: restarted

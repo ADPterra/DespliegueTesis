@@ -1,0 +1,89 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Copia de certificado prim-kibana.crt para kibana hacia el controlador ansible
+      fetch:
+        src: /usr/share/elasticsearch/prim-kibana/prim-kibana.crt
+        dest: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_prim_kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+    - name: Copia de certificado prim-kibana.key para kibana hacia el controlador ansible
+      fetch:
+        src: /usr/share/elasticsearch/prim-kibana/prim-kibana.key
+        dest: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_prim_kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+
+    - name: Copia de certificado sec-kibana.crt para kibana hacia el controlador ansible
+      fetch:
+        src: /usr/share/elasticsearch/sec-kibana/sec-kibana.crt
+        dest: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_sec_kibana/
+        flat: yes
+      vars: 
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+
+    - name: Copia de certificado sec-kibana.key para kibana hacia el controlador ansible
+      fetch:
+        src: /usr/share/elasticsearch/sec-kibana/sec-kibana.key
+        dest: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_sec_kibana/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+- hosts: prim-kibana
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado crt desde controlador ansible hacia instancias kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_prim_kibana/prim-kibana.crt
+        dest: /etc/kibana/certs/
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/prim-kibana.crt && chmod 660 /etc/kibana/certs/prim-kibana.crt"
+
+    - name: Transferencia de llave desde controlador ansible hacia instancias kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_prim_kibana/prim-kibana.key
+        dest: /etc/kibana/certs/
+
+    - name: Asignacion de permisos a la llave generada
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/prim-kibana.key && chmod 660 /etc/kibana/certs/prim-kibana.key"
+
+
+- hosts: sec-kibana
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado crt desde controlador ansible hacia instancias kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_sec_kibana/sec-kibana.crt
+        dest: /etc/kibana/certs/
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/sec-kibana.crt && chmod 660 /etc/kibana/certs/sec-kibana.crt"
+
+    - name: Transferencia de llave desde controlador ansible hacia instancias kibana
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificados_crt_y_llave_para_sec_kibana/sec-kibana.key
+        dest: /etc/kibana/certs/
+
+
+    - name: Asignacion de permisos a llave generada
+      become: yes
+      shell:
+        cmd: "chown root:kibana /etc/kibana/certs/sec-kibana.key && chmod 660 /etc/kibana/certs/sec-kibana.key"

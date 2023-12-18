@@ -1,0 +1,48 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Creacion de certificado https para sec-kibana
+      expect:
+        command: "/usr/share/elasticsearch/bin/elasticsearch-certutil csr -name sec-kibana -dns adp-terraform2023.com,www.adp-terraform2023.com"
+        responses:
+          'Please enter the desired output file \[csr-bundle.zip\]:': "\n"
+
+    - name: Descomprimir el archivo elasticsearch-ssl-http.zip con los certificados.
+      command: /usr/bin/unzip /usr/share/elasticsearch/csr-bundle.zip
+      args:
+        chdir: /usr/share/elasticsearch
+
+    - name: Eliminar archivo zip
+      command: /usr/bin/rm /usr/share/elasticsearch/csr-bundle.zip
+      args:
+        chdir: /usr/share/elasticsearch
+
+
+    - name: Eliminar certificate-bundle.zip creado para prim-kibana
+      command: /usr/bin/rm /usr/share/elasticsearch/certificate-bundle.zip
+
+
+    - name: Creacion de pem para certificado sec-kibana
+      expect:
+        command: "/usr/share/elasticsearch/bin/elasticsearch-certutil cert --pem -ca /usr/share/elasticsearch/elastic-stack-ca.p12 -name sec-kibana"
+        responses:
+          '.*Enter password for CA \(/usr/share/elasticsearch/elastic-stack-ca.p12\) :.*': "adp_terraform2023"
+          'Please enter the desired output file \[certificate-bundle.zip\]:': "\n"
+
+    - name: Envio de script a maquina para ejecutar comando
+      synchronize:
+        src: /home/Proyecto/scripts/unzip_certificate-bundle.sh
+        dest: /usr/share/elasticsearch/
+        rsync_path: /usr/bin/rsync
+
+    - name: Permisos de ejecucion para script
+      command: chmod +x unzip_certificate-bundle.sh
+      args:
+        chdir: /usr/share/elasticsearch
+
+    - name: ejecutar script
+      command: /usr/share/elasticsearch/unzip_certificate-bundle.sh
+      args:
+        chdir: /usr/share/elasticsearch

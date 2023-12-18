@@ -1,0 +1,27 @@
+- name: Reemplazar y Descomentar variables en el archivo de configuración de Kibana
+  hosts: prim-kibana
+  become: yes
+
+  tasks:
+    - name: Descomentar y reemplazar server.ssl.enabled
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*server\.ssl\.enabled: )false$'
+        replace: '\g<1>true'
+
+    - name: Descomentar y reemplazar server.ssl.certificate
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp:  '^#(.*server\.ssl\.certificate: )\/path\/to\/your\/server\.crt$'
+        replace: '\g<1>/etc/kibana/certs/prim-kibana.crt'
+
+    - name: Descomentar y reemplazar server.ssl.key
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp:  '^#(.*server\.ssl\.key: )\/path\/to\/your\/server\.key$'
+        replace: '\g<1>/etc/kibana/certs/prim-kibana.key'
+
+    - name: Reiniciar servicio kibana
+      service: 
+        name: kibana
+        state: restarted

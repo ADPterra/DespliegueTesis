@@ -1,0 +1,10 @@
+---
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Descomprimir el archivo elasticsearch-ssl-http.zip con los certificados.
+      command: /usr/bin/unzip /usr/share/elasticsearch/elasticsearch-ssl-http.zip
+      args:
+        chdir: /etc/elasticsearch

@@ -1,0 +1,19 @@
+- name: Restart Kibana with daemon-reload
+  hosts: kibana-cluster
+  become: yes
+  tasks:
+    - name: Reload systemd configuration
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart Kibana
+      service:
+        name: kibana
+        state: restarted
+
+    - name: Comando para crear conectividad con elasticsearch primario
+      command: curl -k https://10.194.0.20:9200 -u kibana_system:kibana_adp_terraform2023
+
+
+    - name: Comando para crear conectividad con elasticsearch secundario
+      command: curl -k https://10.195.0.20:9200 -u kibana_system:kibana_adp_terraform2023

@@ -1,0 +1,5 @@
+ID_PROYECTO=elpanaderoconelpan
+CUENTA_ADMIN=adp.terraform2023@gmail.com
+NUEVA_CUENTA_DE_SERVICIO=api-despliegue-20231217121417
+EMAIL_CUENTA_DE_SERVICIO=api-despliegue-20231217121417@elpanaderoconelpan.iam.gserviceaccount.com
+LLAVE_CUENTA_DE_SERVICIO=/home/Proyecto/llave_cuenta_de_servicio/key_file.json

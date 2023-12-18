@@ -1,0 +1,28 @@
+---
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Transferencia de certificados hacia instancias
+      synchronize:
+        src: /home/Proyecto/certificados/
+        dest: /etc/elasticsearch/certs/
+        rsync_path: /usr/bin/rsync
+        
+
+- hosts: prim-kibana
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Creacion de directorio certs
+      file:
+        path: /etc/kibana/certs
+        state: directory
+
+    - name: Transferencia de certificados hacia instancias
+      synchronize:
+        src: /home/Proyecto/certificados/
+        dest: /etc/kibana/certs/
+        rsync_path: /usr/bin/rsync

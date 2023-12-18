@@ -1,0 +1,15 @@
+- hosts: elastic-log-cluster
+  gather_facts: false
+  become: yes
+  tasks:
+    
+    - name: Instalacion de ultima version de logstash
+      apt:
+        update_cache: yes
+        name: logstash
+        state: present
+
+    - name: Reiniciar logstash
+      service:
+        name: logstash
+        state: restarted

@@ -1,0 +1,10 @@
+---
+- name: Reinicio de elasticsearch para que tenga conectividad con kibana
+  hosts: elastic-log-cluster
+  become: yes
+
+  tasks:
+    - name: Reiniciar elasticsearch
+      ansible.builtin.service:
+        name: elasticsearch
+        state: restarted

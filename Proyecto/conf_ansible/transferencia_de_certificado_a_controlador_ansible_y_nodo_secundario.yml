@@ -1,0 +1,36 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Copiar elastic-certificates.p12 a /etc/elasticsearch/certs/
+      shell:
+        cmd: "cp /usr/share/elasticsearch/elastic-certificates.p12 /etc/elasticsearch/certs/ && chmod 0660 /etc/elasticsearch/certs/elastic-certificates.p12 && chown root:elasticsearch /etc/elasticsearch/certs/elastic-certificates.p12"
+
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferir hacia el controlador ansible el certificado elastic-certificates.p12
+      fetch:
+        src: /etc/elasticsearch/certs/elastic-certificates.p12
+        dest: /home/Proyecto/conf_ansible/certificado_tls_para_nodos_elasticsearch/
+        flat: yes
+      vars:
+        ansible_ssh_private_key_file: /root/.ssh/llave_ssh_proyecto
+
+- hosts: sec-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de certificado desde controlador ansible hascia sec-elastic-log
+      synchronize:
+        src: /home/Proyecto/conf_ansible/certificado_tls_para_nodos_elasticsearch/elastic-certificates.p12
+        dest: /etc/elasticsearch/certs/
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "chown root:elasticsearch /etc/elasticsearch/certs/elastic-certificates.p12 && chmod 660 /etc/elasticsearch/certs/elastic-certificates.p12"

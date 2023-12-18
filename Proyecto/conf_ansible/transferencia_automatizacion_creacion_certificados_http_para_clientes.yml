@@ -1,0 +1,24 @@
+- hosts: prim-elastic-log
+  gather_facts: false
+  become: yes
+
+  tasks:
+    - name: Transferencia de .sh para crear certificados http.p12
+      synchronize:
+        src: /home/Proyecto/automatizacion_creacion_de_certificados_http_para_clientes_con_elasticsearch.sh
+        dest: /etc/elasticsearch/
+
+    - name: Asignacion de permisos de ejecucion
+      become: yes
+      shell:
+        cmd: "chmod +x /etc/elasticsearch/automatizacion_creacion_de_certificados_http_para_clientes_con_elasticsearch.sh"
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "cd /etc/elasticsearch"
+
+    - name: Asignacion de permisos a certificado
+      become: yes
+      shell:
+        cmd: "cd /etc/elasticsearch && ./automatizacion_creacion_de_certificados_http_para_clientes_con_elasticsearch.sh"

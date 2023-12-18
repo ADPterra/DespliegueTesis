@@ -1,0 +1,46 @@
+- name: Reemplazar y Descomentar variables en el archivo de configuración de Elasticsearch
+  hosts: prim-kibana
+  become: yes
+
+  tasks:
+    - name: Descomentar y reemplazar configuración en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*server\.port: )5601$'
+        replace: '\g<1>5601'
+
+    - name: Descomentar y reemplazar server.host en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*server\.host: )"localhost"$'
+        replace: '\g<1>"0.0.0.0"'
+
+    - name: Descomentar y reemplazar server.name en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*server\.name: )"your-hostname"$'
+        replace: '\g<1>"prim-kibana"'
+
+    - name: Descomentar y reemplazar elasticsearch.hosts en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*elasticsearch\.hosts: )\["http:\/\/localhost:9200"\]$'
+        replace: '\g<1>[ "https://10.194.0.20:9200", "https://10.195.0.20:9200" ]'
+
+    - name: Descomentar y reemplazar elasticsearch.username en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*elasticsearch\.username: )"kibana_system"$'
+        replace: '\g<1>"kibana_system"'
+
+    - name: Descomentar y reemplazar elasticsearch.password en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*elasticsearch\.password: )"pass"$'
+        replace: '\g<1>"kibana_adp_terraform2023"'
+
+    - name: Descomentar y reemplazar elasticsearch.ssl.certificateAuthorities en kibana.yml
+      replace:
+        path: /etc/kibana/kibana.yml
+        regexp: '^#(.*elasticsearch\.ssl\.certificateAuthorities: )\[ "/path\/to\/your\/CA\.pem" \]$'
+        replace: '\g<1>[ "/etc/kibana/certs/elasticsearch-ca.pem" ]'

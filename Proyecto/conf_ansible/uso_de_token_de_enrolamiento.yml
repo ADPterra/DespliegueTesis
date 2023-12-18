@@ -1,0 +1,17 @@
+---
+- name: Ejecucion de comando elasticsearch-reconfigure-node para conectar sec-elastic-log al cluster
+  hosts: sec-elastic-log
+  become: true
+
+  tasks:
+    - name: Reconfiguracion de nodo con token
+      command: "echo 'y' | /usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token \"$(cat /etc/elasticsearch/token_para_conexion_de_nodos/token.txt)\""
+
+    - name: Daemon-reload
+      command: "systemctl daemon-reload"
+
+    - name: Habilitar servicio  elasticsearch
+      command: "systemctl enable elasticsearch.service"
+
+    - name: Iniciar servicio elasticsearch service
+      command: "systemctl start elasticsearch"
