@@ -5,13 +5,18 @@ Paso 2: Ingresar a la consola de Google Cloud
 Paso 3: Descargar los repositorios del GitHub "Proyecto"
 Paso 4: realizar esta serie de comandos:
 	
- 	A) cd /home/Proyecto   	----> nos dirigimos a la ruta determinada
-	B) ./despliegue.sh    	----> Creamos cuenta de servicio y claves SSH y los asociamos a un proyecto
-	C) ./despliegue_modulos_terraform.sh   ----> Desplegamos la arquitectura con Terraform (Red, SubRed, Instancias, Reglas de Firewall, Rutas)
-	D) cd /home/Proyecto/modulos/Instancias ----> Nos dirigimos a la ruta determinada
-	E) ./automatizar_ips_externas_en_inventario_ansible.sh ---> Realizamos la automatizacion para colocar las IPs externas de las instancias al inventario de Ansible
-	F) cd /home/Proyecto/conf_ansible -----> Nos dirigimos a la ruta determinada
-	G) ./automatizacion_ansible.sh -----> Desplegamos la automatizacion de servicios de monitoreo en la arquitectura creada con Terraform
+ 	A) git clone https://github.com/ADPterra/DespliegueTesis.git          ----> Busca y descarga los repositorios
+        B) mv DespliegueTesis/Proyecto /home/                                 ----> Mueve la carpeta DespliegueTesis
+        C) cd /home/Proyecto                                                  ----> Te vas a la ruta indicada
+        D) chmod +x despliegue.sh despliegue_modulos_terraform.sh             ----> otorga permisos de ejecución 
+        E) ./despliegue.sh                                                    ----> Despliegue de cuentas de servicio , claves ssh, etc
+        F) ./despliegue_modulos_terraform.sh                                  ----> Despliegue modulos de Terraform
+        G) cd /home/Proyecto/modulos/Instancias                               ----> Vamos al modulo de Instancias
+        H) chmod +x automatizar_ips_externas_en_inventario_ansible.sh         ----> otorga permisos de ejecución
+        I) ./automatizar_ips_externas_en_inventario_ansible.sh                ----> Otorga las IP de los host a Ansible para su configuración
+        J) cd /home/Proyecto/conf_ansible                                     ----> Nos movemos a la ruta indicada
+        K) chmod +x automatizacion_ansible.sh                                 ----> Otorgamos permisos de ejecución
+        L) ./automatizacion_ansible.sh                                        ----> Desplegamos los servicios dentro de las maquinas creadas con Terraform
 
 Paso 5: Entramos a Kibana a traves de HTTPS con su IP pública y el puerto 5601.
 	
